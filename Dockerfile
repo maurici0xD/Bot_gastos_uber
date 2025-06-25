@@ -24,7 +24,7 @@ RUN echo "Paso 5/9: Instalando pydantic..."
 RUN pip install pydantic
 
 RUN echo "Paso 6/9: Instalando openrouteservice-py..."
-RUN pip install openrouteservice-py
+RUN pip install openrouteservice
 
 RUN echo "Paso 7/9: Instalando staticmap..."
 RUN pip install staticmap
