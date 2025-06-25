@@ -35,6 +35,8 @@ RUN pip install Pillow
 RUN echo "Paso 9/9: Instalando pytz..."
 RUN pip install pytz
 
+RUN pip install polyline
+
 RUN echo "¡Todas las dependencias se instalaron con éxito!"
 # --- FIN DE LA INSTALACIÓN INDIVIDUAL ---
 

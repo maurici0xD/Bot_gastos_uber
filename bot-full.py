@@ -32,7 +32,7 @@ except ImportError:
     logging.warning("Librería 'polyline' no encontrada.")
 
 from pyrogram import Client, filters, idle, StopPropagation, ContinuePropagation
-from pyrogram.handlers import RawUpdateHandler
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.raw.types import UpdateNewMessage, UpdateEditMessage, MessageMediaGeo, MessageMediaGeoLive
 from pyrogram.errors import MessageNotModified, MessageIdInvalid
