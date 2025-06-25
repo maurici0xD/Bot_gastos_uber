@@ -9,7 +9,7 @@ services:
     # Le da un nombre amigable al contenedor
     container_name: uber-bot-container
     # Política de reinicio: se reiniciará si falla, pero no si lo detienes manualmente
-    restart: unless-stopped
+    restart: always
     # Carga las variables de entorno desde el archivo .env
     env_file:
       - .env
@@ -18,4 +18,4 @@ services:
       - "9091:9091" # Asegúrate que el puerto coincida con el que usa Uvicorn en tu script
     # Mapea los volúmenes para persistir datos
     volumes:
-      - ./data:/app/data # Mapea la carpeta local 'data' a la carpeta '/app/data' del contenedor
+      - /home/mauricio/docker/uber_bot/data:/app/data # Mapea la carpeta local 'data' a la carpeta '/app/data' del contenedor
