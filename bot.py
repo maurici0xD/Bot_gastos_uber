@@ -2,10 +2,11 @@ import os
 import logging
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 import uvicorn
-from fastapi import FastAPI, Request # <-- Se importa Request
-from pydantic import BaseModel
+from fastapi import FastAPI, Body
+from pydantic import BaseModel, Field
 from pyrogram import Client
 
 # --- 1. Configuración Básica ---
@@ -13,7 +14,7 @@ from pyrogram import Client
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - [%(levelname)s] - %(message)s", datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
-# Lee las credenciales de Telegram desde las variables de entorno
+# Lee las credenciales de Telegram
 try:
     API_ID = int(os.getenv("TELEGRAM_API_ID"))
     API_HASH = os.getenv("TELEGRAM_API_HASH")
@@ -21,7 +22,7 @@ try:
     if not all([API_ID, API_HASH, TOKEN]):
          raise ValueError("Variables de entorno de Telegram no configuradas.")
 except (ValueError, TypeError):
-    logger.critical("Error: Asegúrate de configurar tus variables de entorno (API_ID, API_HASH, TOKEN).")
+    logger.critical("Error: Asegúrate de configurar tus variables de entorno.")
     exit()
 
 # Creamos la instancia del cliente de Pyrogram
@@ -32,7 +33,7 @@ pyrogram_client = Client(
     bot_token=TOKEN
 )
 
-# --- 2. Lógica de FastAPI y Traccar ---
+# --- 2. Lógica de FastAPI y Traccar (VERSIÓN FINAL) ---
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,44 +44,56 @@ async def lifespan(app: FastAPI):
         yield
     logger.info("Cliente de Pyrogram detenido.")
 
-# Creamos la instancia de FastAPI y le asignamos nuestro manejador de ciclo de vida
 api = FastAPI(lifespan=lifespan)
 
+# --- INICIO DE MODELOS DE DATOS ANIDADOS ---
+# Creamos un "molde" que coincide exactamente con el JSON que envía Traccar.
 
-# --- MODIFICACIÓN DE DEPURACIÓN: Capturar la petición cruda ---
-# Cambiamos la firma para recibir el objeto Request completo.
+class Coords(BaseModel):
+    latitude: float
+    longitude: float
+    speed: float
+
+class Location(BaseModel):
+    coords: Coords
+    timestamp: datetime
+
+class TraccarPayload(BaseModel):
+    location: Location
+    device_id: str = Field(..., alias='device_id')
+
+# --- FIN DE MODELOS DE DATOS ---
+
+
 @api.post("/api/traccar")
-async def receive_traccar_data(request: Request):
+async def receive_traccar_data(payload: TraccarPayload = Body(...)):
     """
-    Este es el 'receptor' en modo depuración.
-    Captura y muestra toda la información de la petición entrante.
+    Este es el 'receptor' final. Lee el cuerpo JSON de la petición
+    y lo valida contra nuestro modelo TraccarPayload.
     """
-    logger.info("="*20 + " PETICIÓN DE TRACCAR RECIBIDA " + "="*20)
+    # Extraemos los datos del payload validado
+    user_id_str = payload.device_id
+    lat = payload.location.coords.latitude
+    lon = payload.location.coords.longitude
     
-    # 1. Imprimir los parámetros de la URL
-    query_params = request.query_params
-    logger.info(f"Parámetros en la URL (Query Params): {query_params}")
-
-    # 2. Imprimir el cuerpo (body) de la petición
-    body = await request.body()
+    logger.info(f"¡Éxito! Datos JSON procesados para ID {user_id_str}: Lat={lat}, Lon={lon}")
+    
     try:
-        body_text = body.decode('utf-8')
-        logger.info(f"Cuerpo de la Petición (Body): {body_text}")
-    except UnicodeDecodeError:
-        logger.info(f"Cuerpo de la Petición (crudo, no es texto): {body}")
-
-    # 3. Imprimir las cabeceras (headers)
-    headers = request.headers
-    logger.info(f"Cabeceras (Headers): {headers}")
-    
-    logger.info("="*20 + " FIN DE LA PETICIÓN " + "="*20)
-
-    # Respondemos siempre 'ok' para que Traccar no muestre errores.
+        user_id = int(user_id_str)
+        
+        # Enviamos la notificación de confirmación a Telegram
+        await pyrogram_client.send_message(
+            chat_id=user_id,
+            text=f"✅ Coordenada recibida y procesada:\nLat: `{lat}`\nLon: `{lon}`"
+        )
+    except Exception as e:
+        logger.error(f"No se pudo enviar el mensaje de confirmación a Telegram: {e}")
+        
     return {"status": "ok"}
 
 
 # --- 3. Arranque del Servidor ---
 
 if __name__ == "__main__":
-    logger.info("Iniciando servidor de prueba para Traccar (MODO DEPURACIÓN)...")
+    logger.info("Iniciando servidor de prueba para Traccar...")
     uvicorn.run(api, host="0.0.0.0", port=9091)
