@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiamos el resto de nuestro código al contenedor
 # --- MODIFICACIÓN: Usar el nombre de archivo correcto ---
-COPY test_traccar.py .
+COPY bot.py .
 
 # El comando que se ejecutará cuando el contenedor inicie
 # --- MODIFICACIÓN: Usar el nombre de archivo correcto ---
