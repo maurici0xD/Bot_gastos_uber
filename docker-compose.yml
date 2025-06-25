@@ -15,7 +15,7 @@ services:
       - .env
     # Mapea los puertos. El formato es "PUERTO_EN_TU_MAQUINA:PUERTO_EN_EL_CONTENEDOR"
     ports:
-      - "8096:8096" # Asegúrate que el puerto coincida con el que usa Uvicorn en tu script
+      - "9091:9091" # Asegúrate que el puerto coincida con el que usa Uvicorn en tu script
     # Mapea los volúmenes para persistir datos
     volumes:
       - ./data:/app/data # Mapea la carpeta local 'data' a la carpeta '/app/data' del contenedor
