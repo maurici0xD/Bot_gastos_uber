@@ -1,0 +1,21 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  uber-bot:
+    # Construye la imagen usando el Dockerfile en el directorio actual
+    build: .
+    # Le da un nombre amigable al contenedor
+    container_name: uber-bot-container
+    # Política de reinicio: se reiniciará si falla, pero no si lo detienes manualmente
+    restart: unless-stopped
+    # Carga las variables de entorno desde el archivo .env
+    env_file:
+      - .env
+    # Mapea los puertos. El formato es "PUERTO_EN_TU_MAQUINA:PUERTO_EN_EL_CONTENEDOR"
+    ports:
+      - "8096:8096" # Asegúrate que el puerto coincida con el que usa Uvicorn en tu script
+    # Mapea los volúmenes para persistir datos
+    volumes:
+      - ./data:/app/data # Mapea la carpeta local 'data' a la carpeta '/app/data' del contenedor

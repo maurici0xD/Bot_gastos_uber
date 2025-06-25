@@ -1,0 +1,10 @@
+# requirements.txt
+
+pyrogram
+uvicorn[standard]
+fastapi
+pydantic
+openrouteservice-py
+staticmap
+Pillow
+pytz
