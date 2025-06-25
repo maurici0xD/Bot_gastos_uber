@@ -12,7 +12,7 @@ COPY bot.py .
 # para identificar cuál es el que falla.
 
 RUN echo "Paso 1/4: Instalando pyrogram..."
-RUN pip install pyrogram
+RUN pip install -U pyrogram tgcrypto
 
 RUN echo "Paso 2/4: Instalando uvicorn..."
 RUN pip install "uvicorn[standard]"

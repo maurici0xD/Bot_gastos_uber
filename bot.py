@@ -55,7 +55,7 @@ class TraccarData(BaseModel):
     timestamp: int
     speed: float = 0.0
 
-@api.get("/api/traccar")
+@api.post("/api/traccar")
 async def receive_traccar_data(data: TraccarData = Depends()):
     """
     Este es el 'receptor'. Se activa cuando Traccar envía una ubicación.
